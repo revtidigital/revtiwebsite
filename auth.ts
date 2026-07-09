@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth-utils";
 import { z } from "zod";
+import authConfig from "./auth.config";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -13,9 +14,7 @@ const loginSchema = z.object({
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/admin/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       name: "credentials",
@@ -48,20 +47,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id!;
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as any;
-      }
-      return session;
-    },
-  },
 });
