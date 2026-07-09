@@ -8,14 +8,19 @@ interface CMSPageProps {
 }
 
 export async function generateStaticParams() {
-  const pages = await prisma.page.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true },
-  });
+  try {
+    const pages = await prisma.page.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true },
+    });
 
-  return pages.map((page: { slug: string }) => ({
-    slug: page.slug,
-  }));
+    return pages.map((page: { slug: string }) => ({
+      slug: page.slug,
+    }));
+  } catch (error) {
+    console.warn("Could not fetch page slugs for static params during build", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: CMSPageProps) {

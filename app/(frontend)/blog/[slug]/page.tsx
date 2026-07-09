@@ -9,14 +9,19 @@ interface BlogPostProps {
 }
 
 export async function generateStaticParams() {
-  const posts = await prisma.post.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true },
-  });
+  try {
+    const posts = await prisma.post.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true },
+    });
 
-  return posts.map((post: { slug: string }) => ({
-    slug: post.slug,
-  }));
+    return posts.map((post: { slug: string }) => ({
+      slug: post.slug,
+    }));
+  } catch (error) {
+    console.warn("Could not fetch post slugs for static params during build", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: BlogPostProps) {
