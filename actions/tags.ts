@@ -12,10 +12,15 @@ const tagSchema = z.object({
 });
 
 export async function getTags() {
-  return prisma.tag.findMany({
-    include: { _count: { select: { posts: true } } },
-    orderBy: { name: "asc" },
-  });
+  try {
+    return await prisma.tag.findMany({
+      include: { _count: { select: { posts: true } } },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.warn("Could not fetch tags from database", error);
+    return [];
+  }
 }
 
 export async function createTag(data: FormData): Promise<ActionResponse> {

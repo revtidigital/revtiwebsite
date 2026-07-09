@@ -8,15 +8,28 @@ import { revalidatePath } from "next/cache";
 import type { ActionResponse, SiteSettings } from "@/types";
 
 export async function getSettings(): Promise<SiteSettings> {
-  const settings = await prisma.siteSetting.findMany();
-  const result: Record<string, string | number> = {};
+  const result: Record<string, string | number> = {
+    site_name: "Revti",
+    site_description: "A modern CMS platform",
+    site_logo: "",
+    site_favicon: "",
+    seo_title: "Revti - Modern CMS",
+    seo_description: "A scalable, SaaS-grade CMS platform",
+    footer_text: "© 2026 Revti. All rights reserved.",
+    posts_per_page: 10,
+  };
 
-  for (const setting of settings) {
-    try {
-      result[setting.key] = JSON.parse(setting.value as string);
-    } catch {
-      result[setting.key] = setting.value as string;
+  try {
+    const settings = await prisma.siteSetting.findMany();
+    for (const setting of settings) {
+      try {
+        result[setting.key] = JSON.parse(setting.value as string);
+      } catch {
+        result[setting.key] = setting.value as string;
+      }
     }
+  } catch (error) {
+    console.warn("Could not load settings from database, using defaults", error);
   }
 
   return result as unknown as SiteSettings;

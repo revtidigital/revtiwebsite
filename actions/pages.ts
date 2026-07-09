@@ -23,21 +23,31 @@ export async function getPages({
     where.title = { contains: search, mode: "insensitive" };
   }
 
-  const [data, total] = await Promise.all([
-    prisma.page.findMany({
-      where,
-      orderBy: { sortOrder: "asc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.page.count({ where }),
-  ]);
+  try {
+    const [data, total] = await Promise.all([
+      prisma.page.findMany({
+        where,
+        orderBy: { sortOrder: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.page.count({ where }),
+    ]);
 
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  } catch (error) {
+    console.warn("Could not fetch pages from database", error);
+    return { data: [], total: 0, page, limit, totalPages: 0 };
+  }
 }
 
 export async function getPageById(id: string) {
-  return prisma.page.findUnique({ where: { id } });
+  try {
+    return await prisma.page.findUnique({ where: { id } });
+  } catch (error) {
+    console.warn(`Could not fetch page ${id} from database`, error);
+    return null;
+  }
 }
 
 export async function createPage(data: FormData): Promise<ActionResponse> {

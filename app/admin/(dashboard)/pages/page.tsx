@@ -1,4 +1,5 @@
 import { getPages } from "@/actions/pages";
+export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/admin/page-header";
 import { PagesTable } from "./pages-table";
 import Link from "next/link";

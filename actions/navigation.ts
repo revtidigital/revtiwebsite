@@ -15,31 +15,41 @@ const navItemSchema = z.object({
 });
 
 export async function getNavigations() {
-  return prisma.navigation.findMany({
-    include: {
-      items: {
-        orderBy: { sortOrder: "asc" },
-        include: {
-          children: { orderBy: { sortOrder: "asc" } },
+  try {
+    return await prisma.navigation.findMany({
+      include: {
+        items: {
+          orderBy: { sortOrder: "asc" },
+          include: {
+            children: { orderBy: { sortOrder: "asc" } },
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.warn("Could not fetch navigations from database", error);
+    return [];
+  }
 }
 
 export async function getNavigationByName(name: string) {
-  return prisma.navigation.findUnique({
-    where: { name },
-    include: {
-      items: {
-        where: { parentId: null },
-        orderBy: { sortOrder: "asc" },
-        include: {
-          children: { orderBy: { sortOrder: "asc" } },
+  try {
+    return await prisma.navigation.findUnique({
+      where: { name },
+      include: {
+        items: {
+          where: { parentId: null },
+          orderBy: { sortOrder: "asc" },
+          include: {
+            children: { orderBy: { sortOrder: "asc" } },
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.warn(`Could not fetch navigation menu ${name} from database`, error);
+    return null;
+  }
 }
 
 export async function addNavItem(navigationId: string, data: FormData): Promise<ActionResponse> {

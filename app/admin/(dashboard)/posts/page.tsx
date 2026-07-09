@@ -1,4 +1,5 @@
 import { getPosts } from "@/actions/posts";
+export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/admin/page-header";
 import { PostsTable } from "./posts-table";
 import Link from "next/link";

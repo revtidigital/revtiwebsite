@@ -7,13 +7,18 @@ import { revalidatePath } from "next/cache";
 import type { ActionResponse } from "@/types";
 
 export async function getCategories() {
-  return prisma.category.findMany({
-    include: {
-      _count: { select: { posts: true } },
-      children: true,
-    },
-    orderBy: { name: "asc" },
-  });
+  try {
+    return await prisma.category.findMany({
+      include: {
+        _count: { select: { posts: true } },
+        children: true,
+      },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.warn("Could not fetch categories from database", error);
+    return [];
+  }
 }
 
 export async function createCategory(data: FormData): Promise<ActionResponse> {
