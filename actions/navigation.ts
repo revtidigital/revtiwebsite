@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { hasPermission } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import type { ActionResponse } from "@/types";
 import { z } from "zod";
@@ -55,7 +56,9 @@ export async function getNavigationByName(name: string) {
 export async function addNavItem(navigationId: string, data: FormData): Promise<ActionResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+    if (!session?.user || !hasPermission(session.user.role, "ADMIN")) {
+      return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const raw = Object.fromEntries(data.entries());
     const parsed = navItemSchema.safeParse({
@@ -86,7 +89,9 @@ export async function addNavItem(navigationId: string, data: FormData): Promise<
 export async function updateNavItem(id: string, data: FormData): Promise<ActionResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+    if (!session?.user || !hasPermission(session.user.role, "ADMIN")) {
+      return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const raw = Object.fromEntries(data.entries());
     const parsed = navItemSchema.safeParse({
@@ -115,7 +120,9 @@ export async function updateNavItem(id: string, data: FormData): Promise<ActionR
 export async function deleteNavItem(id: string): Promise<ActionResponse> {
   try {
     const session = await auth();
-    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+    if (!session?.user || !hasPermission(session.user.role, "ADMIN")) {
+      return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     await prisma.navigationItem.delete({ where: { id } });
     revalidatePath("/admin/navigation");
